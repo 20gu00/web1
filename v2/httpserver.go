@@ -18,11 +18,11 @@ type factServer struct {
 
 func (f *factServer) ServerStart(addr string) error {
 	//根
-	//http.HandleFunc("/", func(writer http.ResponseWriter,
-	//	request *http.Request) {
-	//	c := NewContext(writer, request)
-	//	f.root(c)
-	//})
+	http.HandleFunc("/", func(writer http.ResponseWriter,
+		request *http.Request) {
+		c := NewContext(writer, request)
+		f.root(c)
+	})
 	return http.ListenAndServe(addr, nil)
 }
 

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	web "github.com/20gu00/web1/v2"
+	web "github.com/20gu00/web1/v1"
 	"net/http"
 )
 
