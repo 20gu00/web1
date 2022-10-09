@@ -1,0 +1,4 @@
+1.go.mod的module最好不要自己手动改,go mod init最好
+2.想让别人从github之类的地方import,最好module写github.com/用户名/仓库名这样
+3.最好是某个文件夹下,下面存放一堆go文件,注意最好别放main包main文件这些,因为我们的定位是库源码文件
+4.import时是module+文件夹路径这样
