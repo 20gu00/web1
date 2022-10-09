@@ -3,37 +3,31 @@ package v3
 import (
 	"errors"
 	"net/http"
+	"sort"
 	"strings"
 )
 
-//var supportMethods = [4]string {http.MethodPost, http.MethodGet, http.MethodDelete, http.MethodPut}
-
+var sustainMethods = [4]string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete}
+var ErrInvalidMethod = errors.New("invalid method error")
 var ErrInvalidPattern = errors.New("invalid pattern error")
 
 type HandlerBaseTree struct {
-	root *node
+	//root *node
+	trees map[string]*node
 }
 
 func NewHandlerBaseTree() Handler {
+	trees := make(map[string]*node, len(sustainMethods))
+	for _, method := range sustainMethods {
+		trees[method] = newRootNode(method)
+	}
 	return &HandlerBaseTree{
-		root: &node{},
+		trees: trees,
 	}
 }
 
-type node struct {
-	path     string
-	children []*node
-	handler  handlerFunc
-}
-
-func newNode(path string) *node {
-	return &node{
-		path:     path,
-		children: make([]*node, 0, 10),
-	}
-}
 func (h *HandlerBaseTree) ServeHTTP(c *Context) {
-	handler, found := h.searchRouter(c.R.URL.Path)
+	handler, found := h.searchRouter(c, c.R.Method, c.R.URL.Path)
 	if !found {
 		c.W.WriteHeader(http.StatusNotFound)
 		_, _ = c.W.Write([]byte("not found!"))
@@ -43,12 +37,17 @@ func (h *HandlerBaseTree) ServeHTTP(c *Context) {
 	handler(c)
 }
 
-func (h *HandlerBaseTree) searchRouter(pattern string) (handlerFunc, bool) {
+func (h *HandlerBaseTree) searchRouter(c *Context, method string, pattern string) (handlerFunc, bool) {
 	pattern = strings.Trim(pattern, "/")
 	paths := strings.Split(pattern, "/")
-	currentRoot := h.root
+	currentRoot, ok := h.trees[method]
+	if !ok {
+		return nil, false
+	}
+
 	for _, path := range paths {
-		child, ok := h.searchChild(currentRoot, path)
+		// 从子节点里边找一个匹配到了当前 p 的节点
+		child, ok := h.searchChild(currentRoot, path, c)
 		if !ok {
 			return nil, false
 		}
@@ -68,13 +67,16 @@ func (h *HandlerBaseTree) HttpRoute(method string, pattern string, handlerFunc h
 
 	pattern = strings.Trim(pattern, "/")
 	paths := strings.Split(pattern, "/")
-	currentRoot := h.root
+	currentRoot, ok := h.trees[method]
+	if !ok {
+		return ErrInvalidMethod
+	}
 	for index, path := range paths {
-		matchChild, ok := h.searchChild(currentRoot, path)
-		if ok {
-			currentRoot = matchChild
+		child, ok := h.searchChild(currentRoot, path, nil) //context,nil
+		// != nodeTypeAny 是考虑到 /order/* 和 /order/:id 这种注册顺序
+		if ok && child.nodeType != nodeTypeAny {
+			currentRoot = child
 		} else {
-			// 为当前节点根据
 			h.buildSubTree(currentRoot, paths[index:], handlerFunc)
 			return nil
 		}
@@ -83,19 +85,22 @@ func (h *HandlerBaseTree) HttpRoute(method string, pattern string, handlerFunc h
 	return nil
 }
 
-func (h *HandlerBaseTree) searchChild(root *node, path string) (*node, bool) {
-	var wildcardNode *node
+func (h *HandlerBaseTree) searchChild(root *node, path string, c *Context) (*node, bool) {
+	candidates := make([]*node, 0, 2)
 	for _, child := range root.children {
-		if child.path == path && child.path != "*" {
-			return child, true
-		}
-
-		if child.path == "*" {
-			wildcardNode = child
+		if child.matchFunc(path, c) {
+			candidates = append(candidates, child)
 		}
 	}
-	b := wildcardNode != nil
-	return wildcardNode, b //nil,err
+	if len(candidates) == 0 {
+		return nil, false
+	}
+
+	// type 也决定了它们的优先级
+	sort.Slice(candidates, func(i, j int) bool {
+		return candidates[i].nodeType < candidates[j].nodeType
+	})
+	return candidates[len(candidates)-1], true
 }
 
 func (h *HandlerBaseTree) buildSubTree(root *node, paths []string, handlerFn handlerFunc) {

@@ -28,8 +28,7 @@ func (f *factServer) ServerStart(addr string) error {
 
 func (f *factServer) HttpRoute(method string, pattern string,
 	handlerFunc handlerFunc) error {
-	err := f.handler.HttpRoute(method, pattern, handlerFunc)
-	return err
+	return f.handler.HttpRoute(method, pattern, handlerFunc)
 }
 
 func NewFactServer(name string, builders ...FilterBuilder) HttpServer {
@@ -37,8 +36,8 @@ func NewFactServer(name string, builders ...FilterBuilder) HttpServer {
 	//handler := NewHandlerBasedOnMap()
 	var root Filter = handler.ServeHTTP
 	for i := len(builders) - 1; i >= 0; i-- {
-		b := builders[i]
-		root = b(root)
+		builder := builders[i]
+		root = builder(root)
 	}
 	res := &factServer{
 		Name:    name,
