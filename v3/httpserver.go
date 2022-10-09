@@ -1,17 +1,17 @@
-package v2
+package v3
 
 import "net/http"
 
 type HttpServer interface {
 	RouteDo
-	ServerStart(address string) error
+	ServerStart(addr string) error
 }
 
 type RouteDo interface {
 	HttpRoute(method string, pattern string, handlerFunc handlerFunc) error
 }
 type factServer struct {
-	Name    string
+	Name    string //标记下server,日志输出的时候方便识别,大写
 	root    Filter
 	handler Handler
 }
