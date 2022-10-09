@@ -8,7 +8,7 @@ type HttpServer interface {
 }
 
 type RouteDo interface {
-	HttpRoute(method string, pattern string, handlerFunc handlerFunc)
+	HttpRoute(method string, pattern string, handlerFunc handlerFunc) error
 }
 type factServer struct {
 	Name    string
@@ -27,8 +27,9 @@ func (f *factServer) ServerStart(addr string) error {
 }
 
 func (f *factServer) HttpRoute(method string, pattern string,
-	handlerFunc handlerFunc) {
-	f.handler.HttpRoute(method, pattern, handlerFunc)
+	handlerFunc handlerFunc) error {
+	err := f.handler.HttpRoute(method, pattern, handlerFunc)
+	return err
 }
 
 func NewFactServer(name string, builders ...FilterBuilder) HttpServer {

@@ -1,9 +1,12 @@
 package v2
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 )
+
+//var supportMethods = [4]string {http.MethodPost, http.MethodGet, http.MethodDelete, http.MethodPut}
 
 var ErrInvalidPattern = errors.New("invalid pattern error")
 
@@ -57,10 +60,12 @@ func (h *HandlerBaseTree) searchRouter(pattern string) (handlerFunc, bool) {
 	return currentRoot.handler, true
 }
 
-func (h *HandlerBaseTree) HttpRoute(
-	method string,
-	pattern string,
-	handlerFunc handlerFunc) {
+func (h *HandlerBaseTree) HttpRoute(method string, pattern string, handlerFunc handlerFunc) error {
+	err := h.validatePattern(pattern)
+	if err != nil {
+		return err
+	}
+
 	pattern = strings.Trim(pattern, "/")
 	paths := strings.Split(pattern, "/")
 	currentRoot := h.root
@@ -71,16 +76,17 @@ func (h *HandlerBaseTree) HttpRoute(
 		} else {
 			// 为当前节点根据
 			h.buildSubTree(currentRoot, paths[index:], handlerFunc)
-			return
+			return nil
 		}
 	}
 	currentRoot.handler = handlerFunc
+	return nil
 }
 
 func (h *HandlerBaseTree) searchChild(root *node, path string) (*node, bool) {
 	var wildcardNode *node
 	for _, child := range root.children {
-		if child.path == path && child.path != "*"{
+		if child.path == path && child.path != "*" {
 			return child, true
 		}
 
@@ -88,8 +94,8 @@ func (h *HandlerBaseTree) searchChild(root *node, path string) (*node, bool) {
 			wildcardNode = child
 		}
 	}
-	b:=wildcardNode!=nil
-	return wildcardNode, b  //nil,err
+	b := wildcardNode != nil
+	return wildcardNode, b //nil,err
 }
 
 func (h *HandlerBaseTree) buildSubTree(root *node, paths []string, handlerFn handlerFunc) {
@@ -108,7 +114,7 @@ func (h *HandlerBaseTree) validatePattern(pattern string) error {
 
 	p := strings.Index(pattern, "*")
 	if p > 0 {
-		if p != len(pattern) - 1 {
+		if p != len(pattern)-1 {
 			return ErrInvalidPattern
 		}
 
