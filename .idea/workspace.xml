@@ -6,12 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="297295a0-2131-4645-be00-e8a4bbbb9310" name="变更" comment="">
       <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v1/filter.go" beforeDir="false" afterPath="$PROJECT_DIR$/v1/filter.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v1/httphandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/v1/httphandler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v1/httpserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/v1/httpserver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v1/routebasemap.go" beforeDir="false" afterPath="$PROJECT_DIR$/v1/routebasemap.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v1/routetree.go" beforeDir="false" afterPath="$PROJECT_DIR$/v1/routetree.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/v1/servercontext.go" beforeDir="false" afterPath="$PROJECT_DIR$/v1/servercontext.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
